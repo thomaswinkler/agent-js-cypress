@@ -36,6 +36,8 @@ describe('utils script', () => {
           'customScreenshot1.png': Buffer.from([1, 1, 1, 1, 1, 1, 1]),
           customDir: {
             'customScreenshot2.png': Buffer.from([2, 2, 2, 2, 2, 2, 2]),
+            'custom -- test name.png': Buffer.from([1, 2, 3, 4, 5, 6, 7]),
+            'custom -- test name (failed).png': Buffer.from([8, 6, 7, 5, 3, 0, 5]),
           },
         },
       });
@@ -50,13 +52,22 @@ describe('utils script', () => {
       const expectedAttachment = {
         name: 'test name (failed)',
         type: 'image/png',
-        content: Buffer.from([8, 6, 7, 5, 3, 0, 9]).toString('base64'),
+        content: Buffer.from([8, 6, 7, 5, 3, 0, 5]).toString('base64'),
       };
 
+      // first screenshot found will be in customDir
       const attachment = getFailedScreenshot(testTitle);
-
       expect(attachment).toBeDefined();
       expect(attachment).toEqual(expectedAttachment);
+
+      const expectedSuiteAttachment = {
+        name: 'test name (failed)',
+        type: 'image/png',
+        content: Buffer.from([8, 6, 7, 5, 3, 0, 9]).toString('base64'),
+      };
+      const attachmentForSuite = getFailedScreenshot(testTitle, 'suite name');
+      expect(attachmentForSuite).toBeDefined();
+      expect(attachmentForSuite).toEqual(expectedSuiteAttachment);
     });
 
     it('getPassedScreenshots: should return passed attachments', () => {
@@ -75,10 +86,13 @@ describe('utils script', () => {
       ];
 
       const attachments = getPassedScreenshots(testTitle);
-
       expect(attachments).toBeDefined();
-      expect(attachments.length).toEqual(2);
-      expect(attachments).toEqual(expectedAttachments);
+      expect(attachments.length).toEqual(3);
+
+      const attachmentsForSuite = getPassedScreenshots(testTitle, 'suite name');
+      expect(attachmentsForSuite).toBeDefined();
+      expect(attachmentsForSuite.length).toEqual(2);
+      expect(attachmentsForSuite).toEqual(expectedAttachments);
     });
 
     it('getCustomScreenshots: should return custom screenshot', () => {
