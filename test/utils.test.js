@@ -128,6 +128,40 @@ describe('utils script', () => {
       jest.clearAllMocks();
     });
 
+    it('getCustomScreenshots: should filter duplicate custom screenshots', () => {
+      // duplicate custom screenshots, e.g. in afterEach use screenshot('customScreenshot1'))
+      jest.spyOn(path, 'parse').mockImplementation(() => ({
+        base: 'example.spec.js',
+      }));
+      const testFileName = `test\\example.spec.js`;
+      const customScreenshotNames = [
+        'customScreenshot1',
+        'customDir/customScreenshot2',
+        'customScreenshot1',
+        'customScreenshot1',
+        'customScreenshot1',
+      ];
+      const expectedAttachments = [
+        {
+          name: 'customScreenshot1',
+          type: 'image/png',
+          content: Buffer.from([1, 1, 1, 1, 1, 1, 1]).toString('base64'),
+        },
+        {
+          name: 'customScreenshot2',
+          type: 'image/png',
+          content: Buffer.from([2, 2, 2, 2, 2, 2, 2]).toString('base64'),
+        },
+      ];
+
+      const attachments = getCustomScreenshots(customScreenshotNames, testFileName);
+
+      expect(attachments).toBeDefined();
+      expect(attachments.length).toEqual(2);
+      expect(attachments).toEqual(expectedAttachments);
+      jest.clearAllMocks();
+    });
+
     it('getCustomScreenshots: should return [] in case of no corresponding files', () => {
       jest.spyOn(path, 'parse').mockImplementation(() => ({
         base: 'example.spec.js',
