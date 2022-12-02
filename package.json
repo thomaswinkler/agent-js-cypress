@@ -1,6 +1,6 @@
 {
-  "name": "@reportportal/agent-js-cypress",
-  "version": "5.1.0",
+  "name": "@twi/agent-js-cypress",
+  "version": "5.1.1",
   "description": "This agent helps Cypress to communicate with Report Portal",
   "main": "index.js",
   "scripts": {
@@ -9,10 +9,7 @@
     "test": "jest --detectOpenHandles --config ./jest.config.js",
     "test:coverage": "jest --coverage"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/reportportal/agent-js-cypress"
-  },
+  "repository":"https://github.softwareag.com/twi/build-pipeline-cypress-reporting",
   "dependencies": {
     "@reportportal/client-javascript": "^5.0.6",
     "glob": "7.1.3",
