@@ -33,6 +33,7 @@ describe('utils script', () => {
           'suite name -- test name (failed).png': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
           'suite name -- test name.png': Buffer.from([1, 2, 3, 4, 5, 6, 7]),
           'suite name -- test name (1).png': Buffer.from([8, 7, 6, 5, 4, 3, 2]),
+          'suite name -- test name -- after each hook.png': Buffer.from([1, 3, 6, 5, 4, 3, 2]),
           'customScreenshot1.png': Buffer.from([1, 1, 1, 1, 1, 1, 1]),
           customDir: {
             'customScreenshot2.png': Buffer.from([2, 2, 2, 2, 2, 2, 2]),
@@ -83,15 +84,20 @@ describe('utils script', () => {
           type: 'image/png',
           content: Buffer.from([8, 7, 6, 5, 4, 3, 2]).toString('base64'),
         },
+        {
+          name: 'test name-3',
+          type: 'image/png',
+          content: Buffer.from([1, 3, 6, 5, 4, 3, 2]).toString('base64'),
+        },
       ];
 
       const attachments = getPassedScreenshots(testTitle);
       expect(attachments).toBeDefined();
-      expect(attachments.length).toEqual(3);
+      expect(attachments.length).toEqual(4);
 
       const attachmentsForSuite = getPassedScreenshots(testTitle, 'suite name');
       expect(attachmentsForSuite).toBeDefined();
-      expect(attachmentsForSuite.length).toEqual(2);
+      expect(attachmentsForSuite.length).toEqual(3);
       expect(attachmentsForSuite).toEqual(expectedAttachments);
     });
 
