@@ -20,6 +20,7 @@ const {
   getFixtureFolderPattern,
   getExcludeSpecPattern,
   getSpecPattern,
+  getVideoFile,
 } = require('./../lib/utils');
 const pjson = require('./../package.json');
 
@@ -39,6 +40,9 @@ describe('utils script', () => {
             'customScreenshot2.png': Buffer.from([2, 2, 2, 2, 2, 2, 2]),
             'custom -- test name.png': Buffer.from([1, 2, 3, 4, 5, 6, 7]),
             'custom -- test name (failed).png': Buffer.from([8, 6, 7, 5, 3, 0, 5]),
+          },
+          videos: {
+            'custom suite name.cy.ts.mp4': Buffer.from([1, 2, 7, 9, 3, 0, 5]),
           },
         },
       });
@@ -173,6 +177,25 @@ describe('utils script', () => {
 
       expect(attachments).toBeDefined();
       expect(attachments.length).toEqual(0);
+      jest.clearAllMocks();
+    });
+
+    it('getVideoFile: should return video file attachment', () => {
+      jest.spyOn(path, 'parse').mockImplementation(() => ({
+        base: 'example.spec.js',
+      }));
+
+      const testFileName = 'custom suite name.cy.ts';
+      const expectedAttachment = {
+        name: 'custom suite name.cy.ts.mp4',
+        type: 'video/mp4',
+        content: Buffer.from([1, 2, 7, 9, 3, 0, 5]).toString('base64'),
+      };
+
+      const attachment = getVideoFile(testFileName);
+
+      expect(attachment).toBeDefined();
+      expect(attachment).toEqual(expectedAttachment);
       jest.clearAllMocks();
     });
   });
@@ -397,6 +420,7 @@ describe('utils script', () => {
           attributes: [],
           codeRef: 'test/example.spec.js/suite name',
           parentId: undefined,
+          testFileName: 'test\\example.spec.js',
         };
 
         const suiteStartObject = getSuiteStartObject(suite, testFileName);
@@ -424,6 +448,7 @@ describe('utils script', () => {
           attributes: [],
           codeRef: 'test/example.spec.js/parent suite name/suite name',
           parentId: 'parentSuiteId',
+          testFileName: 'test\\example.spec.js',
         };
 
         const suiteStartObject = getSuiteStartObject(suite, testFileName);
