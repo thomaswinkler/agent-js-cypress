@@ -28,15 +28,22 @@ const { RealDate, MockedDate, currentDate, getDefaultConfig } = require('./mock/
 
 describe('utils script', () => {
   describe('attachment utils', () => {
+    const screenshotPath = 'example/screenshots';
+    const screenshotSpecFile = 'example.spec.js';
+
     beforeEach(() => {
       mock({
-        'example/screenshots/example.spec.js': {
+        [`${screenshotPath}/${screenshotSpecFile}`]: {
           'customScreenshot1.png': Buffer.from([1, 1, 1, 1, 1, 1, 1]),
           'suite name -- test name (failed).png': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+          'suite name -- sub suite -- test name (failed).png': Buffer.from([8, 6, 7, 5, 3, 1, 9]),
+          'suite name -- sub suite -- test name.png': Buffer.from([8, 6, 7, 5, 3, 2, 9]),
           'suite name -- test name -- after each hook (1).png': Buffer.from([2, 3, 6, 5, 4, 3, 2]),
           'suite name -- test name -- after each hook.png': Buffer.from([1, 3, 6, 5, 4, 3, 2]),
           'suite name -- test name (1).png': Buffer.from([8, 7, 6, 5, 4, 3, 2]),
           'suite name -- test name.png': Buffer.from([1, 2, 3, 4, 5, 6, 7]),
+          'other suite name -- test name.png': Buffer.from([9, 2, 3, 4, 5, 6, 7]),
+          'other suite name -- test name (failed).png': Buffer.from([9, 2, 3, 4, 5, 7, 7]),
           customDir: {
             'customScreenshot2.png': Buffer.from([2, 2, 2, 2, 2, 2, 2]),
             'custom -- test name.png': Buffer.from([1, 2, 3, 4, 5, 6, 7]),
@@ -58,22 +65,21 @@ describe('utils script', () => {
       const expectedAttachment = {
         name: 'test name (failed)',
         type: 'image/png',
-        content: Buffer.from([8, 6, 7, 5, 3, 0, 5]).toString('base64'),
+        content: Buffer.from([8, 6, 7, 5, 3, 0, 9]).toString('base64'),
       };
-
-      // first screenshot found will be in customDir
-      const attachment = getFailedScreenshot(testTitle);
+      const attachment = getFailedScreenshot(screenshotPath, testTitle, ['suite name']);
       expect(attachment).toBeDefined();
       expect(attachment).toEqual(expectedAttachment);
 
-      const expectedSuiteAttachment = {
+      const expectedSubSuiteAttachment = {
         name: 'test name (failed)',
         type: 'image/png',
-        content: Buffer.from([8, 6, 7, 5, 3, 0, 9]).toString('base64'),
+        content: Buffer.from([8, 6, 7, 5, 3, 1, 9]).toString('base64'),
       };
-      const attachmentForSuite = getFailedScreenshot(testTitle, ['suite name']);
+      const suites = ['suite name', 'sub suite'];
+      const attachmentForSuite = getFailedScreenshot(screenshotPath, testTitle, suites);
       expect(attachmentForSuite).toBeDefined();
-      expect(attachmentForSuite).toEqual(expectedSuiteAttachment);
+      expect(attachmentForSuite).toEqual(expectedSubSuiteAttachment);
     });
 
     it('getPassedScreenshots: should return passed attachments', () => {
@@ -101,14 +107,29 @@ describe('utils script', () => {
         },
       ];
 
-      const attachments = getPassedScreenshots(testTitle);
+      const attachments = getPassedScreenshots(screenshotPath, testTitle);
       expect(attachments).toBeDefined();
-      expect(attachments.length).toEqual(5);
+      // returns all screenshots, ignoring suites
+      expect(attachments.length).toEqual(6);
 
-      const attachmentsForSuite = getPassedScreenshots(testTitle, ['suite name']);
+      const suites1 = ['suite name'];
+      const attachmentsForSuite = getPassedScreenshots(screenshotPath, testTitle, suites1);
       expect(attachmentsForSuite).toBeDefined();
       expect(attachmentsForSuite.length).toEqual(4);
       expect(attachmentsForSuite).toEqual(expectedAttachments);
+
+      const expectedSubSuitesAttachments = [
+        {
+          name: 'test name-1',
+          type: 'image/png',
+          content: Buffer.from([8, 6, 7, 5, 3, 2, 9]).toString('base64'),
+        },
+      ];
+      const suites2 = ['suite name', 'sub suite'];
+      const attachmentsForSubSuite = getPassedScreenshots(screenshotPath, testTitle, suites2);
+      expect(attachmentsForSubSuite).toBeDefined();
+      expect(attachmentsForSubSuite.length).toEqual(1);
+      expect(attachmentsForSubSuite).toEqual(expectedSubSuitesAttachments);
     });
 
     it('getCustomScreenshots: should return custom screenshot', () => {
@@ -130,7 +151,7 @@ describe('utils script', () => {
         },
       ];
 
-      const attachments = getCustomScreenshots(customScreenshotNames, testFileName);
+      const attachments = getCustomScreenshots(screenshotPath, customScreenshotNames, testFileName);
 
       expect(attachments).toBeDefined();
       expect(attachments.length).toEqual(2);
@@ -164,7 +185,7 @@ describe('utils script', () => {
         },
       ];
 
-      const attachments = getCustomScreenshots(customScreenshotNames, testFileName);
+      const attachments = getCustomScreenshots(screenshotPath, customScreenshotNames, testFileName);
 
       expect(attachments).toBeDefined();
       expect(attachments.length).toEqual(2);
