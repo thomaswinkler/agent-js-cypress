@@ -53,6 +53,16 @@ describe('utils script', () => {
             'custom suite name.cy.ts.mp4': Buffer.from([1, 2, 7, 9, 3, 0, 5]),
           },
         },
+        [`${screenshotPath}/some-other.spec.js`]: {
+          'customScreenshot1.png': Buffer.from([5, 5, 5, 5, 5, 5, 5]),
+          'suite name -- test name (failed).png': Buffer.from([5, 5, 7, 5, 3, 0, 9]),
+          'suite name -- sub suite -- test name (failed).png': Buffer.from([5, 5, 7, 5, 3, 1, 9]),
+          'suite name -- sub suite -- test name.png': Buffer.from([5, 5, 7, 5, 3, 2, 9]),
+          'suite name -- test name -- after each hook (1).png': Buffer.from([5, 5, 6, 5, 4, 3, 2]),
+          'suite name -- test name -- after each hook.png': Buffer.from([5, 5, 6, 5, 4, 3, 2]),
+          'suite name -- test name (1).png': Buffer.from([5, 5, 6, 5, 4, 3, 2]),
+          'suite name -- test name.png': Buffer.from([5, 5, 3, 4, 5, 6, 7]),
+        },
       });
     });
 
@@ -67,7 +77,9 @@ describe('utils script', () => {
         type: 'image/png',
         content: Buffer.from([8, 6, 7, 5, 3, 0, 9]).toString('base64'),
       };
-      const attachment = getFailedScreenshot(screenshotPath, testTitle, ['suite name']);
+
+      const test = { title: testTitle, testFileName: `${screenshotPath}/${screenshotSpecFile}` };
+      const attachment = getFailedScreenshot(screenshotPath, test, ['suite name']);
       expect(attachment).toBeDefined();
       expect(attachment).toEqual(expectedAttachment);
 
@@ -77,7 +89,7 @@ describe('utils script', () => {
         content: Buffer.from([8, 6, 7, 5, 3, 1, 9]).toString('base64'),
       };
       const suites = ['suite name', 'sub suite'];
-      const attachmentForSuite = getFailedScreenshot(screenshotPath, testTitle, suites);
+      const attachmentForSuite = getFailedScreenshot(screenshotPath, test, suites);
       expect(attachmentForSuite).toBeDefined();
       expect(attachmentForSuite).toEqual(expectedSubSuiteAttachment);
     });
@@ -107,13 +119,14 @@ describe('utils script', () => {
         },
       ];
 
-      const attachments = getPassedScreenshots(screenshotPath, testTitle);
+      const test = { title: testTitle, testFileName: `${screenshotPath}/${screenshotSpecFile}` };
+      const attachments = getPassedScreenshots(screenshotPath, test);
       expect(attachments).toBeDefined();
       // returns all screenshots, ignoring suites
       expect(attachments.length).toEqual(6);
 
       const suites1 = ['suite name'];
-      const attachmentsForSuite = getPassedScreenshots(screenshotPath, testTitle, suites1);
+      const attachmentsForSuite = getPassedScreenshots(screenshotPath, test, suites1);
       expect(attachmentsForSuite).toBeDefined();
       expect(attachmentsForSuite.length).toEqual(4);
       expect(attachmentsForSuite).toEqual(expectedAttachments);
@@ -126,7 +139,7 @@ describe('utils script', () => {
         },
       ];
       const suites2 = ['suite name', 'sub suite'];
-      const attachmentsForSubSuite = getPassedScreenshots(screenshotPath, testTitle, suites2);
+      const attachmentsForSubSuite = getPassedScreenshots(screenshotPath, test, suites2);
       expect(attachmentsForSubSuite).toBeDefined();
       expect(attachmentsForSubSuite.length).toEqual(1);
       expect(attachmentsForSubSuite).toEqual(expectedSubSuitesAttachments);
