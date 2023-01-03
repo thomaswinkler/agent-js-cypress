@@ -47,6 +47,8 @@ describe('utils script', () => {
           customDir: {
             'customScreenshot2.png': Buffer.from([2, 2, 2, 2, 2, 2, 2]),
             'custom -- test name.png': Buffer.from([1, 2, 3, 4, 5, 6, 7]),
+            'custom -- test name (attempt 2).png': Buffer.from([2, 4, 3, 4, 5, 6, 7]),
+            'custom -- test name (attempt 3).png': Buffer.from([3, 5, 3, 4, 5, 6, 7]),
             'custom -- test name (failed).png': Buffer.from([8, 6, 7, 5, 3, 0, 5]),
           },
           videos: {
