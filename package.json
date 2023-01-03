@@ -1,6 +1,6 @@
 {
   "name": "@twi/agent-js-cypress",
-  "version": "5.1.8",
+  "version": "5.1.9",
   "description": "This agent helps Cypress to communicate with Report Portal",
   "main": "index.js",
   "scripts": {
