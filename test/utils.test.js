@@ -10,9 +10,6 @@ const {
   getTestEndObject,
   getHookInfo,
   getHookStartObject,
-  getFailedScreenshot,
-  getPassedScreenshots,
-  getCustomScreenshots,
   getAgentInfo,
   getCodeRef,
   getTotalSpecs,
@@ -34,192 +31,15 @@ describe('utils script', () => {
     beforeEach(() => {
       mock({
         [`${screenshotPath}/${screenshotSpecFile}`]: {
-          'customScreenshot1.png': Buffer.from([1, 1, 1, 1, 1, 1, 1]),
-          'suite name -- test name (failed).png': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-          'suite name -- sub suite -- test name (failed).png': Buffer.from([8, 6, 7, 5, 3, 1, 9]),
-          'suite name -- sub suite -- test name.png': Buffer.from([8, 6, 7, 5, 3, 2, 9]),
-          'suite name -- test name -- after each hook (1).png': Buffer.from([2, 3, 6, 5, 4, 3, 2]),
-          'suite name -- test name -- after each hook.png': Buffer.from([1, 3, 6, 5, 4, 3, 2]),
-          'suite name -- test name (1).png': Buffer.from([8, 7, 6, 5, 4, 3, 2]),
-          'suite name -- test name.png': Buffer.from([1, 2, 3, 4, 5, 6, 7]),
-          'other suite name -- test name.png': Buffer.from([9, 2, 3, 4, 5, 6, 7]),
-          'other suite name -- test name (failed).png': Buffer.from([9, 2, 3, 4, 5, 7, 7]),
-          customDir: {
-            'customScreenshot2.png': Buffer.from([2, 2, 2, 2, 2, 2, 2]),
-            'custom -- test name.png': Buffer.from([1, 2, 3, 4, 5, 6, 7]),
-            'custom -- test name (attempt 2).png': Buffer.from([2, 4, 3, 4, 5, 6, 7]),
-            'custom -- test name (attempt 3).png': Buffer.from([3, 5, 3, 4, 5, 6, 7]),
-            'custom -- test name (failed).png': Buffer.from([8, 6, 7, 5, 3, 0, 5]),
-          },
           videos: {
             'custom suite name.cy.ts.mp4': Buffer.from([1, 2, 7, 9, 3, 0, 5]),
           },
-        },
-        [`${screenshotPath}/some-other.spec.js`]: {
-          'customScreenshot1.png': Buffer.from([5, 5, 5, 5, 5, 5, 5]),
-          'suite name -- test name (failed).png': Buffer.from([5, 5, 7, 5, 3, 0, 9]),
-          'suite name -- sub suite -- test name (failed).png': Buffer.from([5, 5, 7, 5, 3, 1, 9]),
-          'suite name -- sub suite -- test name.png': Buffer.from([5, 5, 7, 5, 3, 2, 9]),
-          'suite name -- test name -- after each hook (1).png': Buffer.from([5, 5, 6, 5, 4, 3, 2]),
-          'suite name -- test name -- after each hook.png': Buffer.from([5, 5, 6, 5, 4, 3, 2]),
-          'suite name -- test name (1).png': Buffer.from([5, 5, 6, 5, 4, 3, 2]),
-          'suite name -- test name.png': Buffer.from([5, 5, 3, 4, 5, 6, 7]),
         },
       });
     });
 
     afterEach(() => {
       mock.restore();
-    });
-
-    it('getFailedScreenshot: should return failed attachment', () => {
-      const testTitle = 'test name';
-      const expectedAttachment = {
-        name: 'test name (failed)',
-        type: 'image/png',
-        content: Buffer.from([8, 6, 7, 5, 3, 0, 9]).toString('base64'),
-      };
-
-      const test = { title: testTitle, testFileName: `${screenshotPath}/${screenshotSpecFile}` };
-      const attachment = getFailedScreenshot(screenshotPath, test, ['suite name']);
-      expect(attachment).toBeDefined();
-      expect(attachment).toEqual(expectedAttachment);
-
-      const expectedSubSuiteAttachment = {
-        name: 'test name (failed)',
-        type: 'image/png',
-        content: Buffer.from([8, 6, 7, 5, 3, 1, 9]).toString('base64'),
-      };
-      const suites = ['suite name', 'sub suite'];
-      const attachmentForSuite = getFailedScreenshot(screenshotPath, test, suites);
-      expect(attachmentForSuite).toBeDefined();
-      expect(attachmentForSuite).toEqual(expectedSubSuiteAttachment);
-    });
-
-    it('getPassedScreenshots: should return passed attachments', () => {
-      const testTitle = 'test name';
-      const expectedAttachments = [
-        {
-          name: 'test name-1',
-          type: 'image/png',
-          content: Buffer.from([2, 3, 6, 5, 4, 3, 2]).toString('base64'),
-        },
-        {
-          name: 'test name-2',
-          type: 'image/png',
-          content: Buffer.from([1, 3, 6, 5, 4, 3, 2]).toString('base64'),
-        },
-        {
-          name: 'test name-3',
-          type: 'image/png',
-          content: Buffer.from([8, 7, 6, 5, 4, 3, 2]).toString('base64'),
-        },
-        {
-          name: 'test name-4',
-          type: 'image/png',
-          content: Buffer.from([1, 2, 3, 4, 5, 6, 7]).toString('base64'),
-        },
-      ];
-
-      const test = { title: testTitle, testFileName: `${screenshotPath}/${screenshotSpecFile}` };
-      const attachments = getPassedScreenshots(screenshotPath, test);
-      expect(attachments).toBeDefined();
-      // returns all screenshots, ignoring suites
-      expect(attachments.length).toEqual(6);
-
-      const suites1 = ['suite name'];
-      const attachmentsForSuite = getPassedScreenshots(screenshotPath, test, suites1);
-      expect(attachmentsForSuite).toBeDefined();
-      expect(attachmentsForSuite.length).toEqual(4);
-      expect(attachmentsForSuite).toEqual(expectedAttachments);
-
-      const expectedSubSuitesAttachments = [
-        {
-          name: 'test name-1',
-          type: 'image/png',
-          content: Buffer.from([8, 6, 7, 5, 3, 2, 9]).toString('base64'),
-        },
-      ];
-      const suites2 = ['suite name', 'sub suite'];
-      const attachmentsForSubSuite = getPassedScreenshots(screenshotPath, test, suites2);
-      expect(attachmentsForSubSuite).toBeDefined();
-      expect(attachmentsForSubSuite.length).toEqual(1);
-      expect(attachmentsForSubSuite).toEqual(expectedSubSuitesAttachments);
-    });
-
-    it('getCustomScreenshots: should return custom screenshot', () => {
-      jest.spyOn(path, 'parse').mockImplementation(() => ({
-        base: 'example.spec.js',
-      }));
-      const testFileName = `test\\example.spec.js`;
-      const customScreenshotNames = ['customScreenshot1', 'customDir/customScreenshot2'];
-      const expectedAttachments = [
-        {
-          name: 'customScreenshot1',
-          type: 'image/png',
-          content: Buffer.from([1, 1, 1, 1, 1, 1, 1]).toString('base64'),
-        },
-        {
-          name: 'customScreenshot2',
-          type: 'image/png',
-          content: Buffer.from([2, 2, 2, 2, 2, 2, 2]).toString('base64'),
-        },
-      ];
-
-      const attachments = getCustomScreenshots(screenshotPath, customScreenshotNames, testFileName);
-
-      expect(attachments).toBeDefined();
-      expect(attachments.length).toEqual(2);
-      expect(attachments).toEqual(expectedAttachments);
-      jest.clearAllMocks();
-    });
-
-    it('getCustomScreenshots: should filter duplicate custom screenshots', () => {
-      // duplicate custom screenshots, e.g. in afterEach use screenshot('customScreenshot1'))
-      jest.spyOn(path, 'parse').mockImplementation(() => ({
-        base: 'example.spec.js',
-      }));
-      const testFileName = `test\\example.spec.js`;
-      const customScreenshotNames = [
-        'customScreenshot1',
-        'customDir/customScreenshot2',
-        'customScreenshot1',
-        'customScreenshot1',
-        'customScreenshot1',
-      ];
-      const expectedAttachments = [
-        {
-          name: 'customScreenshot1',
-          type: 'image/png',
-          content: Buffer.from([1, 1, 1, 1, 1, 1, 1]).toString('base64'),
-        },
-        {
-          name: 'customScreenshot2',
-          type: 'image/png',
-          content: Buffer.from([2, 2, 2, 2, 2, 2, 2]).toString('base64'),
-        },
-      ];
-
-      const attachments = getCustomScreenshots(screenshotPath, customScreenshotNames, testFileName);
-
-      expect(attachments).toBeDefined();
-      expect(attachments.length).toEqual(2);
-      expect(attachments).toEqual(expectedAttachments);
-      jest.clearAllMocks();
-    });
-
-    it('getCustomScreenshots: should return [] in case of no corresponding files', () => {
-      jest.spyOn(path, 'parse').mockImplementation(() => ({
-        base: 'example.spec.js',
-      }));
-      const testFileName = `test\\example.spec.js`;
-      const customScreenshotNames = ['screenshotNotExist1', 'screenshotNotExist2'];
-
-      const attachments = getCustomScreenshots(customScreenshotNames, testFileName);
-
-      expect(attachments).toBeDefined();
-      expect(attachments.length).toEqual(0);
-      jest.clearAllMocks();
     });
 
     it('getVideoFile: should return video file attachment', () => {
