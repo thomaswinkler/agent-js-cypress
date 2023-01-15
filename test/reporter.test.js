@@ -281,23 +281,6 @@ describe('reporter script', () => {
       expect(spyTestStart).toHaveBeenCalled();
     });
 
-    it('end failed test: should call sendLog on test fail', function() {
-      const spySendLogOnFinishItem = jest.spyOn(reporter, 'sendLogOnFinishItem');
-      const testInfoObject = {
-        id: 'testId',
-        title: 'test name',
-        status: 'failed',
-        parentId: 'suiteId',
-        err: 'error message',
-      };
-      reporter.testItemIds.set('testId', 'tempTestItemId');
-
-      reporter.testEnd(testInfoObject);
-
-      expect(spySendLogOnFinishItem).toHaveBeenCalledTimes(1);
-      expect(spySendLogOnFinishItem).toHaveBeenCalledWith(testInfoObject, 'tempTestItemId');
-    });
-
     it('end passed test with attributes: finishTestItem should be called with attributes', function() {
       const spyFinishTestItem = jest.spyOn(reporter.client, 'finishTestItem');
       const testInfoObject = {
@@ -411,68 +394,6 @@ describe('reporter script', () => {
       expect(spyFinishTestItem).toHaveBeenCalledWith('tempTestItemId', expectedTestFinishObj);
     });
   });
-  describe('sendLogOnFinishItem: without attachments', () => {
-    beforeAll(() => {
-      mockFS();
-    });
-    afterAll(() => {
-      mockFS.restore();
-    });
-    it('attachments do not exist: client.sendLog should be called with parameters', function() {
-      const spySendLog = jest.spyOn(reporter.client, 'sendLog');
-      const testInfoObject = {
-        id: 'testId',
-        title: 'test name',
-        status: 'failed',
-        parentId: 'suiteId',
-        err: 'error message',
-      };
-      const expectedLogObj = {
-        level: 'error',
-        message: 'error message',
-        time: currentDate,
-      };
-      reporter.tempLaunchId = 'tempLaunchId';
-      reporter.testItemIds.set('suiteId', 'suiteTempId');
-      reporter.testItemIds.set('testId', 'tempTestItemId');
-
-      reporter.sendLogOnFinishItem(testInfoObject, 'tempTestItemId');
-
-      expect(spySendLog).toHaveBeenCalledWith('tempTestItemId', expectedLogObj, undefined);
-    });
-  });
-
-  describe('sendLogOnFinishItem: with attachments', () => {
-    beforeAll(() => {
-      mockFS({
-        'example/screenshots/example.spec.js': {
-          'suite name -- test name.png': Buffer.from([1, 2, 3, 4, 5, 6, 7]),
-          'suite name -- test name (1).png': Buffer.from([8, 7, 6, 5, 4, 3, 2]),
-        },
-      });
-    });
-    afterAll(() => {
-      mockFS.restore();
-    });
-    it('client.sendLog should be called 3 times (for each attachment)', function() {
-      const spySendLog = jest.spyOn(reporter.client, 'sendLog');
-      const testInfoObject = {
-        id: 'testId',
-        title: 'test name',
-        status: 'failed',
-        parentId: 'suiteId',
-        err: 'error message',
-      };
-
-      reporter.tempLaunchId = 'tempLaunchId';
-      reporter.testItemIds.set('suiteId', 'suiteTempId');
-      reporter.testItemIds.set('testId', 'tempTestItemId');
-
-      reporter.sendLogOnFinishItem(testInfoObject, 'tempTestItemId');
-
-      expect(spySendLog).toHaveBeenCalledTimes(3);
-    });
-  });
 
   describe('hookStart', function() {
     beforeEach(function() {
@@ -574,7 +495,6 @@ describe('reporter script', () => {
 
     it('failed hook ends: sendLog and finishTestItem should be called with parameters', function() {
       const spyFinishTestItem = jest.spyOn(reporter.client, 'finishTestItem');
-      const spySendLogOnFinishItem = jest.spyOn(reporter, 'sendLogOnFinishItem');
       const hookInfoObject = {
         id: 'hookId_testId',
         title: '"before each" hook: hook name',
@@ -595,7 +515,6 @@ describe('reporter script', () => {
 
       reporter.hookEnd(hookInfoObject, 'error message');
 
-      expect(spySendLogOnFinishItem).toHaveBeenCalledWith(hookInfoObject, 'testItemId');
       expect(spyFinishTestItem).toHaveBeenCalledWith('testItemId', expectedHookFinishObj);
     });
   });
@@ -739,17 +658,6 @@ describe('reporter script', () => {
       expect(reporter.suiteTestCaseIds.get(suiteTitle)).toEqual(testCaseId);
 
       reporter.suiteTestCaseIds.clear();
-    });
-  });
-  describe('saveCustomScreenshotFilename', () => {
-    it('should set custom screenshot filename', () => {
-      const screenshotFilename = 'screenshot';
-
-      reporter.saveCustomScreenshotFilename({ fileName: screenshotFilename });
-
-      expect(reporter.currentTestCustomScreenshots).toContain(screenshotFilename);
-
-      reporter.currentTestCustomScreenshots = [];
     });
   });
   describe('get current suite info', () => {
