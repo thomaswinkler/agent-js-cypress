@@ -38,7 +38,6 @@ const getDefaultConfig = () => ({
     launch: 'LauncherName',
     description: 'Launch description',
     attributes: [],
-    logScreenshotInfo: false,
   },
 });
 
