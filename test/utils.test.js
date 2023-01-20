@@ -18,6 +18,7 @@ const {
   getExcludeSpecPattern,
   getSpecPattern,
   getVideoFile,
+  prepareReporterOptions,
 } = require('./../lib/utils');
 const pjson = require('./../package.json');
 
@@ -42,14 +43,24 @@ describe('utils script', () => {
       mock.restore();
     });
 
-    it('getVideoFile: should return video file attachment', () => {
-      jest.spyOn(path, 'parse').mockImplementation(() => ({
-        base: 'example.spec.js',
-      }));
-
+    it('getVideoFile: should return video file attachment with videosFolder', () => {
       const testFileName = 'custom suite name.cy.ts';
       const expectedAttachment = {
-        name: 'custom suite name.cy.ts.mp4',
+        name: `${testFileName}.mp4`,
+        type: 'video/mp4',
+        content: Buffer.from([1, 2, 7, 9, 3, 0, 5]).toString('base64'),
+      };
+
+      const attachment = getVideoFile(testFileName, 'example/screenshots/example.spec.js/videos');
+
+      expect(attachment).toBeDefined();
+      expect(attachment).toEqual(expectedAttachment);
+    });
+
+    it('getVideoFile: should return video file attachment without videosFolder', () => {
+      const testFileName = 'custom suite name.cy.ts';
+      const expectedAttachment = {
+        name: `${testFileName}.mp4`,
         type: 'video/mp4',
         content: Buffer.from([1, 2, 7, 9, 3, 0, 5]).toString('base64'),
       };
@@ -58,7 +69,6 @@ describe('utils script', () => {
 
       expect(attachment).toBeDefined();
       expect(attachment).toEqual(expectedAttachment);
-      jest.clearAllMocks();
     });
   });
 
@@ -237,6 +247,28 @@ describe('utils script', () => {
 
         expect(config).toEqual(expectedConfig);
         process.env.RP_TOKEN = undefined;
+      });
+    });
+
+    describe('prepareReporterOptions', function() {
+      it('should pass video related cypress options from cypress config', function() {
+        const initialConfig = getDefaultConfig();
+        initialConfig.videosFolder = '/example/videos';
+        initialConfig.videoUploadOnPasses = true;
+
+        const config = prepareReporterOptions(initialConfig);
+
+        expect(config.reporterOptions.videosFolder).toEqual('/example/videos');
+        expect(config.reporterOptions.videoUploadOnPasses).toEqual(true);
+      });
+
+      it('passing video related cypress options should not fail if undefined', function() {
+        const initialConfig = getDefaultConfig();
+
+        const config = prepareReporterOptions(initialConfig);
+
+        expect(config.reporterOptions.videosFolder).not.toBeDefined();
+        expect(config.reporterOptions.videoUploadOnPasses).not.toBeDefined();
       });
     });
 
