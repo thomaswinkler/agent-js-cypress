@@ -19,6 +19,7 @@ const {
   getSpecPattern,
   getVideoFile,
   prepareReporterOptions,
+  validateReporterOptions,
 } = require('./../lib/utils');
 const pjson = require('./../package.json');
 
@@ -269,6 +270,30 @@ describe('utils script', () => {
 
         expect(config.reporterOptions.videosFolder).not.toBeDefined();
         expect(config.reporterOptions.videoUploadOnPasses).not.toBeDefined();
+      });
+    });
+
+    describe('validateReporterOptions', function() {
+      it('should not throw if has all required options', function() {
+        const config = getDefaultConfig();
+        expect(() => {
+          validateReporterOptions(config.reporterOptions);
+        }).not.toThrow();
+      });
+
+      it('should throw error if config is undefined', function() {
+        const config = undefined;
+        expect(() => {
+          validateReporterOptions(config && config.reporterOptions);
+        }).toThrow();
+      });
+
+      it('should throw error if required option is missing', function() {
+        const initialConfig = { ...getDefaultConfig() };
+        initialConfig.reporterOptions.token = undefined;
+        expect(() => {
+          validateReporterOptions(initialConfig.reporterOptions);
+        }).toThrow();
       });
     });
 
